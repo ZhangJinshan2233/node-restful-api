@@ -29,6 +29,7 @@ app.use('/products',routers.productRouter);
 
 app.use('/orders',routers.orderRouter)
 app.use('/upload',express.static('upload'))
+app.use('/users',routers.userRoute)
 app.use((req,res,next)=>{
     const err=new Error("No found");
     err.status=404;

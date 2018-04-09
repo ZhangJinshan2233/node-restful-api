@@ -18,7 +18,9 @@ var Product=require('./Product');
 
 var Order=require('./Order');
 
+var User=require('./User')
 module.exports={
     Product:Product,
-    Order:Order
+    Order:Order,
+    User:User
 }
