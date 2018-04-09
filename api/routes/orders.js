@@ -2,32 +2,111 @@ const express = require('express');
 
 const router = new express.Router();
 
+const Model = require('../model/Models')
+const mongoose = require('mongoose');
 router
     .route('')
     .get((req, res, next) => {
-        res.status(200).json({
-            message: 'handle Get to /orders method'
+        Model.Order
+        .find()
+        .select('_id product quantity')
+        .populate('product','name')//get the whole properties of Product in the order,
+                                //name is one of the property of Product
+        .exec()
+        .then(docs=>{
+            res.status(200).json({
+                count:docs.length,
+                orders:docs.map(doc=>{
+                 return {
+                     _id:doc._id,
+                     product:doc.product,
+                     quantity:doc.quantity,
+                     request:{
+                        type:"GET",
+                        url:"http://localhost:3000/orders"+doc._id
+                    }
+                 }  
+                })
+            })
+        })
+        .catch(err=>{
+            res.status(500).json({
+                error:err
+            })
         })
     })
     .post((req, res, next) => {
-        const newOrder = {
-            productId: req.body.productId,
-            quantity: req.body.quantity
-        }
-        res.status(200).json({
-            message: 'handle POST to /orders method',
-            newOrder: newOrder
+        Model.Product.findById(req.body.productId)
+        .then(result=>{
+            if(!result){
+                return res.status(500).json({
+                    message:"product not found"
+                })
+            }
+            const newOrder =new Model.Order(
+                {
+                    _id:new mongoose.Types.ObjectId(),
+                    product: req.body.productId,
+                    quantity: req.body.quantity
+                }
+            );
+            return newOrder.save()//return a promise which will be used by next then()
+        })
+        .then(result=>{
+            console.log(result)            
+            res.status(200).json({
+                message:'order stored',
+                createdOrder:{
+                    _id:result._id,
+                    product:result.product,
+                    quantity:result.quantity
+                },
+                request:{
+                    type:"GET",
+                    url:"http://localhost:3000/orders"+result._id
+                }
+            })
+        })
+        .catch(err=>{
+            console.log(err);
+            res.status(500).json({
+                error:err
+            })
         })
     })
 
 router
     .route('/:orderId')
     .get((req, res, next) => {
-        const id = req.params.orderId;
-        res.status(200).json({
-            message: 'you discovered special id',
-            id: id
-        })
+      Model.Order.findById(req.params.orderId)
+      .select('_id product quantity')
+      .populate('product')
+      .exec()
+      .then(orderDoc=>{
+          if(!orderDoc){
+              return res.status(404).json({
+                  message:"order not founds"
+              })
+          }
+            res.status(200).json({
+                message:"get a order",
+                order:{
+                    _id:orderDoc._id,
+                    product:orderDoc.product,
+                    quantity:orderDoc.quantity
+                },
+                request:{
+                    type:"GET",
+                    url:"http://localhost:3000/orders/"+orderDoc._id
+                }
+            })
+      })
+      .catch(err=>{
+          res.status(500).json({
+              message:"not found",
+              error:err
+          })
+      })
     })
 
     .patch((req, res, next) => {
@@ -37,9 +116,26 @@ router
     })
 
     .delete((req, res, next) => {
-        res.status(200).json({
-            message: "delete order"
-        })
+       Model.Order.remove({_id:req.params.orderId})
+       .exec()
+       .then(result=>{
+           res.status(200).json({
+               message:"order deleted",
+               request:{
+                   type:"POST",
+                   url:"http://localhost:3000/orders",
+                   body:{
+                       productId:"String",
+                       quantity:"Number"
+                   }
+               }
+           })
+       })
+       .catch(err=>{
+           res.status(500).json({
+               error:err
+           })
+       })
     })
 
 module.exports = router;

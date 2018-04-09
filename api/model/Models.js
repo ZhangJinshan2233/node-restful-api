@@ -13,8 +13,12 @@ mongoose.set('debug',true);
 
 mongoose.Promise=global.Promise;
 
+//refer all models
 var Product=require('./Product');
 
+var Order=require('./Order');
+
 module.exports={
-    Product:Product
+    Product:Product,
+    Order:Order
 }
