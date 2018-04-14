@@ -39,6 +39,7 @@ app.use((req,res,next)=>{
     next(err);
 })
 
+//handler all kinds of error which contains last error middleware and database error
 app.use((err,req,res,next)=>{
     res.status(err.status||500);
     res.json({
