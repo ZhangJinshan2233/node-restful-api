@@ -1,7 +1,8 @@
 
 const mongoose=require('mongoose');
 mongoose
-.connect('mongodb://localhost/nodeRestShop')
+.connect('mongodb://nodeRestfulShop:1234567890@ds241699.mlab.com:41699/node-rest-shop')
+//'mongodb://localhost/nodeRestShop' local mpngodb
 .then(()=>{
     console.log('connect to mongodb')
 })
