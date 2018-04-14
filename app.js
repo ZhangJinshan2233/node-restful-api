@@ -35,7 +35,7 @@ app.use('/users',routers.userRoute)
 //it will execte this middleware
 app.use((req,res,next)=>{
     const err=new Error("No found");
-    err.status(404);
+    err.status=404;
     next(err);
 })
 
